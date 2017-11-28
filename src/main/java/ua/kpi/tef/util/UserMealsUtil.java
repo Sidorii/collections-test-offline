@@ -40,20 +40,16 @@ public class UserMealsUtil {
                 .collect(Collectors.groupingBy((el) -> el.getDateTime().toLocalDate(),
                         Collectors.summingInt(UserMeal::getCalories)));
 
-        Set<LocalDate> exceedDays = daysToCaloriesMap.entrySet()
-                .stream()
-                .filter((entry) -> entry.getValue() < caloriesPerDay)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toSet());
-
         return mealList.stream()
-                .filter((el) -> !exceedDays.contains(el.getDateTime().toLocalDate()))
-                .map((el) -> createUserMealWithExceedFromUserMeal(el, caloriesPerDay))
+                .map((el) -> createUserMealWithExceedFromUserMeal(el,
+                        daysToCaloriesMap.get(el.getDateTime().toLocalDate()),
+                        caloriesPerDay))
                 .collect(Collectors.toList());
     }
 
-    private static UserMealWithExceed createUserMealWithExceedFromUserMeal(UserMeal userMeal, int maxCalories) {
-        boolean exceed = userMeal.getCalories() > maxCalories;
+    private static UserMealWithExceed createUserMealWithExceedFromUserMeal(UserMeal userMeal, int totalCalories,
+                                                                           int maxCalories) {
+        boolean exceed = totalCalories > maxCalories;
 
         return new UserMealWithExceed(userMeal.getDateTime(),
                 userMeal.getDescription(),
